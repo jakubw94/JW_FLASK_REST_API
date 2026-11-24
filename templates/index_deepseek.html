@@ -1,0 +1,1755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flask Hotel - Premium Booking System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --primary-light: #3d5a80;
+            --secondary: #3498db;
+            --secondary-light: #5dade2;
+            --accent: #e67e22;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --light: #f8f9fa;
+            --light-gray: #e9ecef;
+            --dark: #212529;
+            --admin: #8e44ad;
+            --gold: #d4af37;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+            --radius: 10px;
+            --radius-sm: 6px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+            color: var(--dark);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            flex: 1;
+        }
+
+        /* Header & Navigation */
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: 15px 0;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo i {
+            color: var(--gold);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(to right, var(--secondary), var(--secondary-light));
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(to right, var(--success), #2ecc71);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(to right, var(--danger), #e74c3c);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(to right, var(--warning), #f1c40f);
+            color: white;
+        }
+
+        .btn-admin {
+            background: linear-gradient(to right, var(--admin), #9b59b6);
+            color: white;
+        }
+
+        .btn-accent {
+            background: linear-gradient(to right, var(--accent), #f39c12);
+            color: white;
+        }
+
+        .btn:hover {
+            opacity: 0.92;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Main Content */
+        .view {
+            display: none;
+            background: white;
+            border-radius: var(--radius);
+            padding: 30px;
+            margin: 30px auto;
+            box-shadow: var(--shadow);
+            animation: fadeIn 0.5s ease;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .active-view {
+            display: block;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--light-gray);
+            color: var(--primary);
+            position: relative;
+        }
+
+        .section-title:after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 80px;
+            height: 3px;
+            background: var(--secondary);
+            border-radius: 3px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        input, select {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #ddd;
+            border-radius: var(--radius-sm);
+            font-size: 1rem;
+            transition: var(--transition);
+            background: var(--light);
+        }
+
+        input:focus, select:focus {
+            border-color: var(--secondary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+
+        /* Cards & Room Styles */
+        .card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--secondary);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--secondary);
+        }
+
+        .room-type {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .room-price {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--success);
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .room-price span {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--dark);
+            margin-left: 5px;
+        }
+
+        .room-details {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .room-features {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .feature {
+            background: var(--light);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            margin-bottom: 25px;
+            border-bottom: 1px solid var(--light-gray);
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .tab {
+            padding: 12px 25px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            font-weight: 600;
+            color: var(--dark);
+            transition: var(--transition);
+            border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+            position: relative;
+        }
+
+        .tab.active {
+            border-bottom: 3px solid var(--secondary);
+            color: var(--secondary);
+            background: rgba(52, 152, 219, 0.05);
+        }
+
+        .tab:hover:not(.active) {
+            background: var(--light);
+        }
+
+        /* Messages & Alerts */
+        .message {
+            padding: 15px 20px;
+            border-radius: var(--radius-sm);
+            margin: 20px 0;
+            text-align: center;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .error {
+            background-color: #ffebee;
+            color: var(--danger);
+            border-left: 4px solid var(--danger);
+        }
+
+        .success {
+            background-color: #e8f5e9;
+            color: var(--success);
+            border-left: 4px solid var(--success);
+        }
+
+        .info {
+            background-color: #e3f2fd;
+            color: var(--secondary);
+            border-left: 4px solid var(--secondary);
+        }
+
+        /* Reservations */
+        .reservation-card {
+            background: var(--light);
+            border-left: 4px solid var(--success);
+            position: relative;
+        }
+
+        .reservation-card::before {
+            background: var(--success);
+        }
+
+        .reservation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .dates {
+            font-style: italic;
+            color: #6c757d;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Admin Panel */
+        .admin-section {
+            margin-bottom: 35px;
+            padding: 25px;
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        .admin-section h3 {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--light-gray);
+            color: var(--primary);
+            font-size: 1.4rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        th {
+            background-color: var(--primary);
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:nth-child(even) {
+            background-color: var(--light);
+        }
+
+        tr:hover {
+            background-color: #f0f4f8;
+        }
+
+        .status-active {
+            color: var(--success);
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .status-inactive {
+            color: var(--danger);
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--success);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        /* Mobile Menu */
+        .mobile-menu-btn {
+            display: none;
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 10px;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: 60px 0;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .hero h1 {
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            font-weight: 800;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 0 auto 30px;
+            opacity: 0.9;
+        }
+
+        /* Form Styles */
+        .form-container {
+            max-width: 100%;
+            width: 100%;
+        }
+
+        #search-section,
+        #reservations-section,
+        #admin-panel {
+            max-width: 100%;
+            width: 100%;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .hero h1 {
+                font-size: 2.3rem;
+            }
+
+            .room-details {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-wrap: wrap;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            #auth-buttons, #user-section {
+                display: none;
+                width: 100%;
+                margin-top: 15px;
+                flex-direction: column;
+                gap: 10px;
+                transition: all 0.3s ease;
+            }
+
+            .mobile-menu-active #auth-buttons,
+            .mobile-menu-active #user-section {
+                display: flex;
+            }
+
+            .tabs {
+                flex-direction: column;
+                border-bottom: none;
+            }
+
+            .tab {
+                border-radius: var(--radius-sm);
+                border-bottom: none;
+                background: var(--light);
+                margin-bottom: 5px;
+                width: 100%;
+            }
+
+            .tab.active {
+                border-bottom: none;
+                background: rgba(52, 152, 219, 0.1);
+            }
+
+            .view {
+                padding: 20px;
+                margin: 20px 0;
+            }
+
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+
+            .hero {
+                padding: 40px 0;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .section-title {
+                font-size: 1.5rem;
+            }
+
+            .container {
+                padding: 0 15px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .container {
+                padding: 0 10px;
+            }
+
+            .card {
+                padding: 15px;
+            }
+
+            .feature {
+                width: 100%;
+            }
+
+            .view {
+                padding: 15px;
+                margin: 15px 0;
+            }
+
+            .admin-section {
+                padding: 15px;
+            }
+
+            .section-title {
+                font-size: 1.4rem;
+            }
+
+            input, select {
+                padding: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .view {
+                padding: 10px;
+                margin: 10px 0;
+            }
+
+            .card {
+                padding: 12px;
+            }
+
+            .room-type {
+                font-size: 1.2rem;
+            }
+
+            .room-price {
+                font-size: 1.4rem;
+            }
+
+            .section-title {
+                font-size: 1.3rem;
+            }
+
+            .container {
+                padding: 0 8px;
+            }
+        }
+
+        /* Footer */
+        footer {
+            background: var(--primary);
+            color: white;
+            padding: 20px 0;
+            margin-top: auto;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <div class="logo">
+                <i class="fas fa-hotel"></i>
+                <span>Flask Hotel</span>
+            </div>
+            <button class="mobile-menu-btn" id="mobile-menu-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div id="auth-buttons">
+                <button id="login-btn" class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </button>
+                <button id="register-btn" class="btn btn-success">
+                    <i class="fas fa-user-plus"></i> Register
+                </button>
+            </div>
+            <div id="user-section" style="display: none;">
+                <button id="admin-panel-btn" class="btn btn-admin" style="display: none;">
+                    <i class="fas fa-cog"></i> Admin Panel
+                </button>
+                <button id="logout-btn" class="btn btn-danger">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="hero">
+        <div class="container">
+            <h1>Experience Luxury at Flask Hotel</h1>
+            <p>Book your premium stay with our exclusive room booking system</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Login View -->
+        <div id="login-view" class="view">
+            <div class="form-container">
+                <h2 class="section-title">Login to Your Account</h2>
+
+                    <!-- Informacja o danych testowych -->
+                    <div class="alert alert-info text-center" style="background-color: #e8f4f8; color: #055160; border: 1px solid #9eeaf9; padding: 12px; border-radius: 5px; margin-bottom: 20px; text-align: center;">
+                      <strong>Admin account:</strong> admin / 1234
+                      <br><small>(Development mode)</small>
+                    </div>
+
+                <div id="login-message" class="message" style="display: none;"></div>
+                <div class="form-group">
+                    <label for="login-email"><i class="fas fa-envelope"></i> Email</label>
+                    <input type="email" id="login-email" required placeholder="Enter your email">
+                </div>
+                <div class="form-group">
+                    <label for="login-password"><i class="fas fa-lock"></i> Password</label>
+                    <input type="password" id="login-password" required placeholder="Enter your password">
+                </div>
+                <button id="login-submit" class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </button>
+            </div>
+        </div>
+
+        <!-- Registration View -->
+        <div id="register-view" class="view">
+            <div class="form-container">
+                <h2 class="section-title">Create an Account</h2>
+                <div id="register-message" class="message" style="display: none;"></div>
+                <div class="form-group">
+                    <label for="register-name"><i class="fas fa-user"></i> First Name</label>
+                    <input type="text" id="register-name" required placeholder="Enter your first name">
+                </div>
+                <div class="form-group">
+                    <label for="register-last-name"><i class="fas fa-user"></i> Last Name</label>
+                    <input type="text" id="register-last-name" required placeholder="Enter your last name">
+                </div>
+                <div class="form-group">
+                    <label for="register-email"><i class="fas fa-envelope"></i> Email</label>
+                    <input type="email" id="register-email" required placeholder="Enter your email">
+                </div>
+                <div class="form-group">
+                    <label for="register-password"><i class="fas fa-lock"></i> Password</label>
+                    <input type="password" id="register-password" required placeholder="Create a password">
+                </div>
+                <button id="register-submit" class="btn btn-success">
+                    <i class="fas fa-user-plus"></i> Register
+                </button>
+            </div>
+        </div>
+
+        <!-- Main View After Login -->
+        <div id="main-view" class="view">
+            <div class="tabs">
+                <div class="tab active" id="search-tab">
+                    <i class="fas fa-search"></i> Find Rooms
+                </div>
+                <div class="tab" id="reservations-tab">
+                    <i class="fas fa-calendar-check"></i> My Reservations
+                </div>
+                <div class="tab" id="admin-tab" style="display: none;">
+                    <i class="fas fa-cog"></i> Admin Panel
+                </div>
+            </div>
+
+            <!-- Search Section -->
+            <div id="search-section">
+                <div class="form-group">
+                    <label for="start-date"><i class="fas fa-calendar-day"></i> Check-in Date</label>
+                    <input type="date" id="start-date" required>
+                </div>
+                <div class="form-group">
+                    <label for="end-date"><i class="fas fa-calendar-day"></i> Check-out Date</label>
+                    <input type="date" id="end-date" required>
+                </div>
+                <div class="form-group">
+                    <label for="room-type"><i class="fas fa-bed"></i> Room Type</label>
+                    <select id="room-type">
+                        <option value="">All Room Types</option>
+                        <option value="1">Single Room (1 person)</option>
+                        <option value="2">Double Room (2 people)</option>
+                        <option value="3">Deluxe Suite (3 people)</option>
+                    </select>
+                </div>
+                <button id="search-rooms" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Find Available Rooms
+                </button>
+            </div>
+
+            <!-- Search Results -->
+            <div id="search-results" style="display: none;">
+                <h3 class="section-title">Available Rooms</h3>
+                <div id="rooms-list"></div>
+            </div>
+
+            <!-- Reservations Section -->
+            <div id="reservations-section" style="display: none;">
+                <h3 class="section-title">My Reservations</h3>
+                <div id="reservations-list"></div>
+            </div>
+
+            <!-- Admin Panel -->
+            <div id="admin-panel" style="display: none;">
+                <div class="admin-section">
+                    <h3><i class="fas fa-plus-circle"></i> Add New Room</h3>
+                    <div id="add-room-message" class="message" style="display: none;"></div>
+                    <div class="form-group">
+                        <label for="new-room-type">Room Type</label>
+                        <select id="new-room-type" required>
+                            <option value="1">Single Room (1 person)</option>
+                            <option value="2">Double Room (2 people)</option>
+                            <option value="3">Deluxe Suite (3 people)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="new-room-price">Price per Night ($)</label>
+                        <input type="number" id="new-room-price" min="1" required placeholder="Enter room price">
+                    </div>
+                    <button id="add-room-btn" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Add Room
+                    </button>
+                </div>
+
+                <div class="admin-section">
+                    <h3><i class="fas fa-bed"></i> Room Management</h3>
+                    <div id="rooms-message" class="message" style="display: none;"></div>
+                    <table id="rooms-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Type</th>
+                                <th>Price</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rooms-list-admin">
+                            <!-- Rooms will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="admin-section">
+                    <h3><i class="fas fa-calendar-alt"></i> All Reservations</h3>
+                    <div id="reservations-message" class="message" style="display: none;"></div>
+                    <table id="reservations-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Room</th>
+                                <th>User</th>
+                                <th>Check-in</th>
+                                <th>Check-out</th>
+                                <th>Total Price</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="all-reservations-list">
+                            <!-- Reservations will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Flask Hotel. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // DOM Elements
+        const elements = {
+            views: {
+                login: document.getElementById('login-view'),
+                register: document.getElementById('register-view'),
+                main: document.getElementById('main-view')
+            },
+            buttons: {
+                login: document.getElementById('login-btn'),
+                register: document.getElementById('register-btn'),
+                logout: document.getElementById('logout-btn'),
+                loginSubmit: document.getElementById('login-submit'),
+                registerSubmit: document.getElementById('register-submit'),
+                searchRooms: document.getElementById('search-rooms'),
+                adminPanelBtn: document.getElementById('admin-panel-btn'),
+                adminTab: document.getElementById('admin-tab'),
+                addRoom: document.getElementById('add-room-btn'),
+                mobileMenuToggle: document.getElementById('mobile-menu-toggle')
+            },
+            auth: {
+                container: document.getElementById('auth-buttons'),
+                user: document.getElementById('user-section')
+            },
+            forms: {
+                login: {
+                    email: document.getElementById('login-email'),
+                    password: document.getElementById('login-password')
+                },
+                register: {
+                    name: document.getElementById('register-name'),
+                    lastName: document.getElementById('register-last-name'),
+                    email: document.getElementById('register-email'),
+                    password: document.getElementById('register-password')
+                },
+                search: {
+                    startDate: document.getElementById('start-date'),
+                    endDate: document.getElementById('end-date'),
+                    roomType: document.getElementById('room-type')
+                },
+                admin: {
+                    newRoomType: document.getElementById('new-room-type'),
+                    newRoomPrice: document.getElementById('new-room-price')
+                }
+            },
+            messages: {
+                login: document.getElementById('login-message'),
+                register: document.getElementById('register-message'),
+                addRoom: document.getElementById('add-room-message'),
+                rooms: document.getElementById('rooms-message'),
+                reservations: document.getElementById('reservations-message')
+            },
+            tabs: {
+                search: document.getElementById('search-tab'),
+                reservations: document.getElementById('reservations-tab'),
+                admin: document.getElementById('admin-tab')
+            },
+            sections: {
+                search: document.getElementById('search-section'),
+                results: document.getElementById('search-results'),
+                resultsTitle: document.getElementById('results-title'),
+                reservations: document.getElementById('reservations-section'),
+                adminPanel: document.getElementById('admin-panel')
+            },
+            lists: {
+                rooms: document.getElementById('rooms-list'),
+                reservations: document.getElementById('reservations-list'),
+                roomsAdmin: document.getElementById('rooms-list-admin'),
+                allReservations: document.getElementById('all-reservations-list')
+            }
+        };
+
+        // Helper Functions
+        function showMessage(element, message, isError = true) {
+            element.textContent = message;
+            element.className = isError ? 'message error' : 'message success';
+            element.style.display = 'block';
+
+            setTimeout(() => {
+                element.style.display = 'none';
+            }, 5000);
+        }
+
+        function setActiveView(viewName) {
+            Object.values(elements.views).forEach(view => {
+                view.classList.remove('active-view');
+            });
+            elements.views[viewName].classList.add('active-view');
+        }
+
+        function showAuthButtons(isLoggedIn) {
+            if (isLoggedIn) {
+                elements.auth.container.style.display = 'none';
+                elements.auth.user.style.display = 'flex';
+            } else {
+                elements.auth.container.style.display = 'flex';
+                elements.auth.user.style.display = 'none';
+            }
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+
+        function isFutureDate(dateString) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const date = new Date(dateString);
+            date.setHours(0, 0, 0, 0);
+
+            return date > today;
+        }
+
+        // Tab Switching
+        function switchTab(tabName) {
+            // Reset all tabs
+            elements.tabs.search.classList.remove('active');
+            elements.tabs.reservations.classList.remove('active');
+            elements.tabs.admin.classList.remove('active');
+
+            // Hide all sections
+            elements.sections.search.style.display = 'none';
+            elements.sections.results.style.display = 'none';
+            elements.sections.reservations.style.display = 'none';
+            elements.sections.adminPanel.style.display = 'none';
+
+            // Activate selected tab
+            if (tabName === 'search') {
+                elements.tabs.search.classList.add('active');
+                elements.sections.search.style.display = 'block';
+            } else if (tabName === 'reservations') {
+                elements.tabs.reservations.classList.add('active');
+                elements.sections.reservations.style.display = 'block';
+                loadUserReservations();
+            } else if (tabName === 'admin') {
+                elements.tabs.admin.classList.add('active');
+                elements.sections.adminPanel.style.display = 'block';
+                loadAdminData();
+            }
+        }
+
+        // Authentication Functions
+        function loginUser(email, password) {
+            fetch('/api/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    email: email,
+                    password: password
+                })
+            })
+            .then(response => {
+                if (response.status === 401) {
+                    throw new Error('Invalid login credentials');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.status) {
+                    localStorage.setItem('token', data.data.access_token);
+                    showAuthButtons(true);
+                    setActiveView('main');
+                    checkUserRole();
+                    switchTab('search');
+                } else {
+                    showMessage(elements.messages.login, 'Login failed. Please check your credentials.', true);
+                }
+                elements.forms.login.email.value = '';
+                elements.forms.login.password.value = '';
+            })
+            .catch(error => {
+                showMessage(elements.messages.login, error.message, true);
+                elements.forms.login.password.value = '';
+            });
+        }
+
+        function checkUserRole() {
+            fetch('/api/users/role', {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status && data.data.role === 'admin') {
+                    elements.buttons.adminPanelBtn.style.display = 'inline-block';
+                    elements.buttons.adminTab.style.display = 'block';
+                } else {
+                    elements.buttons.adminPanelBtn.style.display = 'none';
+                    elements.buttons.adminTab.style.display = 'none';
+                }
+            });
+        }
+
+        function registerUser(userData) {
+            fetch('/api/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(userData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status) {
+                    elements.forms.register.name.value = '';
+                    elements.forms.register.lastName.value = '';
+                    elements.forms.register.email.value = '';
+                    elements.forms.register.password.value = '';
+                    showMessage(elements.messages.register, 'Registration successful! You can now log in.', false);
+                    setTimeout(() => {
+                        setActiveView('login');
+                    }, 2000);
+                } else {
+                    elements.forms.register.email.value = '';
+                    elements.forms.register.password.value = '';
+                    showMessage(elements.messages.register, 'Registration failed. Please try again.', true);
+                }
+            })
+            .catch(() => {
+                elements.forms.register.email.value = '';
+                elements.forms.register.password.value = '';
+                showMessage(elements.messages.register, 'Error during registration', true);
+            });
+        }
+
+        function logoutUser() {
+            localStorage.removeItem('token');
+            showAuthButtons(false);
+            setActiveView('login');
+            elements.buttons.adminPanelBtn.style.display = 'none';
+            elements.buttons.adminTab.style.display = 'none';
+        }
+
+        // Room and Reservation Functions
+        function searchRooms() {
+            const startDate = elements.forms.search.startDate.value;
+            const endDate = elements.forms.search.endDate.value;
+            const roomType = elements.forms.search.roomType.value;
+
+            if (!startDate || !endDate) {
+                alert('Please select dates');
+                return;
+            }
+
+            let url = `/api/rooms?start_date=${startDate}&end_date=${endDate}`;
+            if (roomType) {
+                url += `&type=${roomType}`;
+            }
+
+            fetch(url, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status) {
+                    elements.sections.results.style.display = 'block';
+
+                    if (data.data.length > 0) {
+                        displayRooms(data.data, startDate, endDate);
+                    } else {
+                        elements.lists.rooms.innerHTML = '<p class="message info">No rooms available for the selected dates</p>';
+                    }
+                } else {
+                    elements.lists.rooms.innerHTML = '<p class="message error">Error searching for rooms</p>';
+                    elements.sections.results.style.display = 'block';
+                }
+            });
+        }
+
+        function displayRooms(rooms, startDate, endDate) {
+            elements.lists.rooms.innerHTML = '';
+
+            // Calculate number of nights
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            const nights = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+
+            rooms.forEach(room => {
+                const roomCard = document.createElement('div');
+                roomCard.className = 'card';
+
+                // Room type mapping with capacity
+                let roomType = '';
+                let roomIcon = '';
+                let capacity = '';
+
+                switch(room.type) {
+                    case 1:
+                        roomType = 'Single Room';
+                        roomIcon = 'fas fa-user';
+                        capacity = '1 person';
+                        break;
+                    case 2:
+                        roomType = 'Double Room';
+                        roomIcon = 'fas fa-user-friends';
+                        capacity = '2 people';
+                        break;
+                    case 3:
+                        roomType = 'Deluxe Suite';
+                        roomIcon = 'fas fa-crown';
+                        capacity = '3 people';
+                        break;
+                    default:
+                        roomType = 'Unknown Type';
+                        roomIcon = 'fas fa-bed';
+                        capacity = '';
+                }
+
+                // Calculate total price for stay
+                const totalPrice = room.price * nights;
+
+                roomCard.innerHTML = `
+                    <div class="room-type">
+                        <i class="${roomIcon}"></i> ${roomType}
+                    </div>
+                    <div class="room-features">
+                        <div class="feature">
+                            <i class="fas fa-users"></i> ${capacity}
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-moon"></i> ${nights} nights
+                        </div>
+                    </div>
+                    <div class="room-price">
+                        $${room.price} <span>per night</span>
+                    </div>
+                    <div class="room-price" style="color: var(--accent);">
+                        $${totalPrice} <span>total for ${nights} nights</span>
+                    </div>
+                    <div class="room-details">
+                        <div class="dates">
+                            <i class="fas fa-calendar-alt"></i> ${formatDate(startDate)} - ${formatDate(endDate)}
+                        </div>
+                        <button class="btn btn-success book-btn" data-room-id="${room.id}">
+                            <i class="fas fa-bookmark"></i> Book Now
+                        </button>
+                    </div>
+                `;
+
+                elements.lists.rooms.appendChild(roomCard);
+            });
+
+            // Add booking button event listeners
+            document.querySelectorAll('.book-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const roomId = this.getAttribute('data-room-id');
+                    bookRoom(roomId, startDate, endDate);
+                });
+            });
+        }
+
+        function bookRoom(roomId, startDate, endDate) {
+            fetch('/api/reservations', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({
+                    room_id: roomId,
+                    start_date: startDate,
+                    end_date: endDate
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status) {
+                    switchTab('reservations');
+                    alert('Room booked successfully!');
+                } else {
+                    alert('Error booking the room');
+                }
+            });
+        }
+
+        function loadUserReservations() {
+            fetch('/api/reservations', {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status && data.data.length > 0) {
+                    displayReservations(data.data);
+                } else {
+                    elements.lists.reservations.innerHTML = '<p class="message info">You have no reservations yet</p>';
+                }
+            })
+            .catch(() => {
+                elements.lists.reservations.innerHTML = '<p class="message error">Error loading reservations</p>';
+            });
+        }
+
+        function displayReservations(reservations) {
+            elements.lists.reservations.innerHTML = '';
+
+            reservations.forEach(reservation => {
+                const reservationCard = document.createElement('div');
+                reservationCard.className = 'card reservation-card';
+
+                // Room type mapping with capacity
+                let roomType = '';
+                let roomIcon = '';
+                let capacity = '';
+
+                switch(reservation.type) {
+                    case 1:
+                        roomType = 'Single Room';
+                        roomIcon = 'fas fa-user';
+                        capacity = '1 person';
+                        break;
+                    case 2:
+                        roomType = 'Double Room';
+                        roomIcon = 'fas fa-user-friends';
+                        capacity = '2 people';
+                        break;
+                    case 3:
+                        roomType = 'Deluxe Suite';
+                        roomIcon = 'fas fa-crown';
+                        capacity = '3 people';
+                        break;
+                    default:
+                        roomType = 'Unknown Type';
+                        roomIcon = 'fas fa-bed';
+                        capacity = '';
+                }
+
+                // Format dates
+                const startDate = formatDate(reservation.start_date);
+                const endDate = formatDate(reservation.end_date);
+
+                // Check if cancellation is possible
+                const canCancel = isFutureDate(reservation.start_date);
+
+                reservationCard.innerHTML = `
+                    <div class="reservation-header">
+                        <div class="room-type">
+                            <i class="${roomIcon}"></i> ${roomType}
+                        </div>
+                        ${canCancel ? `<button class="btn btn-danger cancel-btn" data-reservation-id="${reservation.id}">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>` : ''}
+                    </div>
+                    <div class="room-features">
+                        <div class="feature">
+                            <i class="fas fa-users"></i> ${capacity}
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-hashtag"></i> Room ID: ${reservation.room_id}
+                        </div>
+                    </div>
+                    <div class="dates">
+                        <i class="fas fa-calendar-alt"></i> ${startDate} - ${endDate}
+                    </div>
+                    <div class="room-price">
+                        Total Price: $${reservation.total_price}
+                    </div>
+                `;
+
+                elements.lists.reservations.appendChild(reservationCard);
+            });
+
+            // Add cancellation button event listeners
+            document.querySelectorAll('.cancel-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const reservationId = this.getAttribute('data-reservation-id');
+                    cancelReservation(reservationId);
+                });
+            });
+        }
+
+        function cancelReservation(reservationId) {
+            if (!confirm('Are you sure you want to cancel this reservation?')) return;
+
+            fetch(`/api/reservations/${reservationId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status) {
+                    alert('Reservation canceled successfully');
+                    loadUserReservations();
+                } else {
+                    alert('Error canceling reservation');
+                }
+            });
+        }
+
+        // Admin Functions
+        function loadAdminData() {
+            loadAllRooms();
+            loadAllReservations();
+        }
+
+        function loadAllRooms() {
+            fetch('/api/rooms/all', {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status && data.data.length > 0) {
+                    displayAllRooms(data.data);
+                } else {
+                    elements.lists.roomsAdmin.innerHTML = '<tr><td colspan="5" class="message info">No rooms found</td></tr>';
+                }
+            })
+            .catch(() => {
+                elements.lists.roomsAdmin.innerHTML = '<tr><td colspan="5" class="message error">Error loading rooms</td></tr>';
+            });
+        }
+
+        function displayAllRooms(rooms) {
+            elements.lists.roomsAdmin.innerHTML = '';
+
+            rooms.forEach(room => {
+                const row = document.createElement('tr');
+
+                // Room type mapping with capacity
+                let roomType = '';
+                let capacity = '';
+                switch(room.type) {
+                    case 1:
+                        roomType = 'Single Room';
+                        capacity = '1 person';
+                        break;
+                    case 2:
+                        roomType = 'Double Room';
+                        capacity = '2 people';
+                        break;
+                    case 3:
+                        roomType = 'Deluxe Suite';
+                        capacity = '3 people';
+                        break;
+                    default:
+                        roomType = 'Unknown Type';
+                        capacity = '';
+                }
+
+                row.innerHTML = `
+                    <td>${room.id}</td>
+                    <td>${roomType}<br><small>${capacity}</small></td>
+                    <td>$${room.price}</td>
+                    <td class="${room.active ? 'status-active' : 'status-inactive'}">
+                        <i class="fas fa-${room.active ? 'check-circle' : 'times-circle'}"></i>
+                        ${room.active ? 'Active' : 'Inactive'}
+                    </td>
+                    <td>
+                        <label class="toggle-switch">
+                            <input type="checkbox" ${room.active ? 'checked' : ''} data-room-id="${room.id}">
+                            <span class="slider"></span>
+                        </label>
+                    </td>
+                `;
+
+                elements.lists.roomsAdmin.appendChild(row);
+            });
+
+            // Add toggle event listeners
+            document.querySelectorAll('#rooms-list-admin input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const roomId = this.getAttribute('data-room-id');
+                    const isActive = this.checked;
+                    updateRoomStatus(roomId, isActive);
+                });
+            });
+        }
+
+        function updateRoomStatus(roomId, isActive) {
+            fetch(`/api/rooms/${roomId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ active: isActive })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status) {
+                    showMessage(elements.messages.rooms, `Room ${roomId} status updated`, false);
+                    setTimeout(loadAllRooms, 1500);
+                } else {
+                    showMessage(elements.messages.rooms, 'Error updating room status', true);
+                    const checkbox = document.querySelector(`#rooms-list-admin input[data-room-id="${roomId}"]`);
+                    checkbox.checked = !isActive;
+                }
+            });
+        }
+
+        function addNewRoom() {
+            const type = elements.forms.admin.newRoomType.value;
+            const price = elements.forms.admin.newRoomPrice.value;
+
+            if (!type || !price) {
+                showMessage(elements.messages.addRoom, 'Please fill all fields', true);
+                return;
+            }
+
+            fetch('/api/rooms', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({
+                    type: parseInt(type),
+                    price: parseFloat(price)
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status) {
+                    showMessage(elements.messages.addRoom, 'Room added successfully', false);
+                    elements.forms.admin.newRoomPrice.value = '';
+                    setTimeout(loadAllRooms, 1500);
+                } else {
+                    showMessage(elements.messages.addRoom, 'Error adding room', true);
+                }
+            });
+        }
+
+        function loadAllReservations() {
+            fetch('/api/reservations/all', {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status && data.data.length > 0) {
+                    displayAllReservations(data.data);
+                } else {
+                    elements.lists.allReservations.innerHTML = '<tr><td colspan="7" class="message info">No reservations found</td></tr>';
+                }
+            })
+            .catch(() => {
+                elements.lists.allReservations.innerHTML = '<tr><td colspan="7" class="message error">Error loading reservations</td></tr>';
+            });
+        }
+
+        function displayAllReservations(reservations) {
+            elements.lists.allReservations.innerHTML = '';
+
+            reservations.forEach(reservation => {
+                const row = document.createElement('tr');
+
+                // Room type mapping with capacity
+                let roomType = '';
+                let capacity = '';
+                switch(reservation.room_type) {
+                    case 1:
+                        roomType = 'Single Room';
+                        capacity = '1 person';
+                        break;
+                    case 2:
+                        roomType = 'Double Room';
+                        capacity = '2 people';
+                        break;
+                    case 3:
+                        roomType = 'Deluxe Suite';
+                        capacity = '3 people';
+                        break;
+                    default:
+                        roomType = 'Unknown Type';
+                        capacity = '';
+                }
+
+                // Format dates
+                const startDate = formatDate(reservation.start_date);
+                const endDate = formatDate(reservation.end_date);
+
+                // Display user information
+                const userName = reservation.name || 'Unknown';
+                const userLastName = reservation.last_name || 'User';
+                const userEmail = reservation.email || 'No email';
+
+                row.innerHTML = `
+                    <td>${reservation.id}</td>
+                    <td>${roomType} (${reservation.room_id} ID)<br><small>${capacity}</small></td>
+                    <td>
+                        <strong>${userName} ${userLastName}</strong><br>
+                        <small>${userEmail}</small><br>
+                        <small>ID: ${reservation.user_id}</small>
+                    </td>
+                    <td>${startDate}</td>
+                    <td>${endDate}</td>
+                    <td>$${reservation.total_price}</td>
+                    <td>
+                        <button class="btn btn-danger delete-reservation-btn" data-reservation-id="${reservation.id}">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </td>
+                `;
+
+                elements.lists.allReservations.appendChild(row);
+            });
+
+            // Add delete button event listeners
+            document.querySelectorAll('.delete-reservation-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const reservationId = this.getAttribute('data-reservation-id');
+                    deleteReservationAdmin(reservationId);
+                });
+            });
+        }
+
+        function deleteReservationAdmin(reservationId) {
+            if (!confirm('Are you sure you want to delete this reservation?')) return;
+
+            fetch(`/api/reservations/${reservationId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status) {
+                    showMessage(elements.messages.reservations, 'Reservation deleted', false);
+                    setTimeout(loadAllReservations, 1500);
+                } else {
+                    showMessage(elements.messages.reservations, 'Error deleting reservation', true);
+                }
+            });
+        }
+
+        // App Initialization
+        function initApp() {
+            const token = localStorage.getItem('token');
+            if (token) {
+                showAuthButtons(true);
+                setActiveView('main');
+                checkUserRole();
+                switchTab('search');
+            } else {
+                showAuthButtons(false);
+                setActiveView('login');
+            }
+
+            // Funkcja do formatowania daty w formacie YYYY-MM-DD w strefie lokalnej
+            function getLocalDateString(date) {
+                const year = date.getFullYear();
+                const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                const day = date.getDate().toString().padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            }
+
+            // Uzyskaj dzisiejszą datę w strefie lokalnej
+            const today = new Date();
+            const todayString = getLocalDateString(today);
+
+            // Uzyskaj datę za tydzień w strefie lokalnej
+            const nextWeek = new Date();
+            nextWeek.setDate(today.getDate() + 7);
+            const nextWeekString = getLocalDateString(nextWeek);
+
+            // Ustaw domyślne daty
+            elements.forms.search.startDate.value = todayString;
+            elements.forms.search.endDate.value = nextWeekString;
+
+            // Ustaw minimalne daty
+            elements.forms.search.startDate.min = todayString;
+            elements.forms.search.endDate.min = todayString;
+
+            // Date validation
+            elements.forms.search.startDate.addEventListener('change', function() {
+                if (this.value < todayString) {
+                    this.value = todayString;
+                }
+                elements.forms.search.endDate.min = this.value;
+            });
+
+            elements.forms.search.endDate.addEventListener('change', function() {
+                if (this.value < elements.forms.search.startDate.value) {
+                    this.value = elements.forms.search.startDate.value;
+                }
+            });
+        }
+
+        // Event Listeners
+        elements.buttons.login.addEventListener('click', () => setActiveView('login'));
+        elements.buttons.register.addEventListener('click', () => setActiveView('register'));
+        elements.buttons.logout.addEventListener('click', logoutUser);
+        elements.buttons.adminPanelBtn.addEventListener('click', () => switchTab('admin'));
+
+        elements.buttons.loginSubmit.addEventListener('click', () => {
+            const email = elements.forms.login.email.value;
+            const password = elements.forms.login.password.value;
+            loginUser(email, password);
+        });
+
+        elements.buttons.registerSubmit.addEventListener('click', () => {
+            const userData = {
+                name: elements.forms.register.name.value,
+                last_name: elements.forms.register.lastName.value,
+                email: elements.forms.register.email.value,
+                password: elements.forms.register.password.value
+            };
+            registerUser(userData);
+        });
+
+        elements.buttons.searchRooms.addEventListener('click', searchRooms);
+        elements.buttons.addRoom.addEventListener('click', addNewRoom);
+
+        elements.tabs.search.addEventListener('click', () => switchTab('search'));
+        elements.tabs.reservations.addEventListener('click', () => switchTab('reservations'));
+        elements.tabs.admin.addEventListener('click', () => switchTab('admin'));
+
+        // Mobile menu toggle
+        elements.buttons.mobileMenuToggle.addEventListener('click', function() {
+            const isLoggedIn = localStorage.getItem('token') !== null;
+
+            if (isLoggedIn) {
+                elements.auth.user.style.display =
+                    elements.auth.user.style.display === 'flex' ? 'none' : 'flex';
+            } else {
+                elements.auth.container.style.display =
+                    elements.auth.container.style.display === 'flex' ? 'none' : 'flex';
+            }
+        });
+
+        // Window resize handler to fix navbar state
+        window.addEventListener('resize', function() {
+            const isMobile = window.innerWidth < 768;
+            const token = localStorage.getItem('token');
+
+            if (!isMobile) {
+                // On desktop, always show the correct buttons
+                if (token) {
+                    elements.auth.container.style.display = 'none';
+                    elements.auth.user.style.display = 'flex';
+                } else {
+                    elements.auth.container.style.display = 'flex';
+                    elements.auth.user.style.display = 'none';
+                }
+            } else {
+                // On mobile, hide both by default
+                elements.auth.container.style.display = 'none';
+                elements.auth.user.style.display = 'none';
+            }
+        });
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>

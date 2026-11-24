@@ -1,0 +1,28 @@
+# Pliki Pythona / cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+env/
+ENV/
+.venv/
+
+# Logi
+*.log
+
+# PyCharm
+.idea/
+*.iml
+*.iws
+
+# VSCode
+.vscode/
+
+# MacOS
+.DS_Store
+
+# Windows
+Thumbs.db
