@@ -55,7 +55,7 @@
 
 **1️⃣ Sklonuj repozytorium:**
 ```
-git clone https://github.com/jakubwprojects/JW_FLASK_REST_API.git
+git clone https://github.com/jakubw94/JW_FLASK_REST_API.git
 cd JW_FLASK_REST_API
 ```
 
